@@ -1,0 +1,16 @@
+#cloud-config
+
+package_update: false
+package_upgrade: false
+
+bootcmd:
+- "cat /etc/network/interfaces.d/50-cloud-init.cfg | sed \"s/dns-nameservers *//g\""
+- "systemctl is-enabled apt-daily.timer | systemctl disable apt-daily.timer"
+- "systemctl mask apt-daily.service"
+- "systemctl is-enabled apt-daily-upgrade.timer | systemctl disable apt-daily-upgrade.timer"
+- "systemctl mask apt-daily-upgrade.service"
+
+write_files:
+- path: /etc/resolv.conf
+  encoding: b64
+  content: ${base64encode(resolv_conf)}
