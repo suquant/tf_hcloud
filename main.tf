@@ -16,19 +16,12 @@ resource "hcloud_server" "instance" {
   }
 }
 
-resource "null_resource" "change_dns_ptr" {
+resource "hcloud_rdns" "dns_ptrs" {
   count       = "${var.count}"
 
-  provisioner "local-exec" {
-    command = "${path.module}/scripts/change_dns_ptr.sh"
-
-    environment {
-      token   = "${var.token}"
-      server  = "${element(hcloud_server.instance.*.id, count.index)}"
-      ip      = "${element(hcloud_server.instance.*.ipv4_address, count.index)}"
-      ptr     = "${element(data.template_file.hostname.*.rendered, count.index)}.${var.domain}"
-    }
-  }
+  server_id   =  "${element(hcloud_server.instance.*.id, count.index)}"
+  ip_address  = "${element(hcloud_server.instance.*.ipv4_address, count.index)}"
+  dns_ptr     = "${element(data.template_file.hostname.*.rendered, count.index)}.${var.domain}"
 }
 
 data "template_file" "user_data" {
