@@ -1,5 +1,3 @@
-variable "token" {}
-
 variable "count" {
   default = 0
 }

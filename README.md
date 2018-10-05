@@ -9,7 +9,6 @@
 
 ### Input variables
 
-* token - cloud token (using for change dns ptr) *
 * count - count of hosts (default: 0)
 * name - name of cluster/project/... (using in hostname generation) (default: default)
 * domain - base domain (default: example.com)
