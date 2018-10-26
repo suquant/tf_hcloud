@@ -1,3 +1,61 @@
+variable "count" {
+  default = 0
+}
+
+variable "name" {
+  default = "default"
+}
+
+variable "domain" {
+  default = "example.com"
+}
+
+variable "hostname_format" {
+  description = "Hostname format: (name, number)"
+  default     = "%s-%02d"
+}
+
+variable "ssh_keys" {
+  type    = "list"
+  default = ["~/.ssh/id_rsa.pub"]
+}
+
+variable "ssh_names" {
+  type    = "list"
+  default = []
+}
+
+variable "image" {
+  default = "ubuntu-16.04"
+}
+
+variable "server_type" {
+  default = "cx11"
+}
+
+variable "datacenters" {
+  type = "list"
+  default = ["nbg1-dc3", "fsn1-dc8", "hel1-dc2"]
+}
+
+variable "apt_packages" {
+  type    = "list"
+  default = []
+}
+
+locals {
+  ssh_keys = ["${compact(concat(hcloud_ssh_key.ssh_key.*.name, var.ssh_names))}"]
+}
+
+
+resource "hcloud_ssh_key" "ssh_key" {
+  count = "${length(var.ssh_keys)}"
+
+  name        = "${format("%s-%02d", var.name, (count.index + 1))}"
+  public_key  = "${file(element(var.ssh_keys, count.index))}"
+}
+
+
 resource "hcloud_server" "instance" {
   count       = "${var.count}"
 
@@ -52,4 +110,29 @@ data "template_file" "hostname" {
   vars {
     value = "${format(var.hostname_format, var.name, count.index + 1)}"
   }
+}
+
+
+output "ids" {
+  value = ["${hcloud_server.instance.*.id}"]
+}
+
+output "hostnames" {
+  value = ["${hcloud_server.instance.*.name}"]
+}
+
+output "public_ips" {
+  value = ["${hcloud_server.instance.*.ipv4_address}"]
+}
+
+output "private_ips" {
+  value = ["${hcloud_server.instance.*.ipv4_address}"]
+}
+
+output "ssh_names" {
+  value = ["${hcloud_ssh_key.ssh_key.*.name}"]
+}
+
+output "private_interface" {
+  value = "eth0"
 }
